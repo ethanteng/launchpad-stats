@@ -5,12 +5,24 @@
 
 from launchpadlib.launchpad import Launchpad
 import os
+import sys
 
+USERNAME=sys.argv[1]
+PPA=sys.argv[2]
+PACKAGE=sys.argv[3]
+VERSION=sys.argv[4]
 cachedir = os.environ['HOME'] + '/.launchpadlib/cache/'
 launchpad = Launchpad.login_anonymously('just testing', 'production', cachedir)
 
-ppa = launchpad.people['gridcoin'].getPPAByName(name='gridcoin-stable')
-binaries = ppa.getPublishedBinaries(binary_name='gridcoinresearch', version='4.0.6.0-45~ubuntu16.04.1')
-b1 = binaries[0]
-print(b1.getDownloadCount())
-#print(b1.getDailyDownloadTotals(start_date='2020-01-01', end_date='2020-01-31'))
+ppa = launchpad.people[USERNAME].getPPAByName(name=PPA)
+bins = ppa.getPublishedBinaries(binary_name=PACKAGE, version=VERSION)
+builds = []
+total = 0
+for bin in bins:
+    count = bin.getDownloadCount()
+    total += count
+    if (count > 0):
+        builds.append([count,'%s %s' % (bin.binary_package_name,bin.binary_package_version)])
+builds_sorted = sorted(builds,key=lambda count: count[0],reverse=True)
+for build in builds_sorted:
+   print '%s:%s' % (build[0], build[1])
